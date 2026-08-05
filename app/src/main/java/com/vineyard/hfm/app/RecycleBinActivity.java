@@ -399,14 +399,9 @@ public class RecycleBinActivity extends Activity {
     }
 
     private void updateToolbarForCurrentDir() {
-        if (currentDirectory == null) {
-            titleTextView.setText("Recycle Bins");
-            titleTextView.setVisibility(View.VISIBLE);
-            recycleBinIcon.setVisibility(View.GONE);
-        } else {
-            titleTextView.setVisibility(View.GONE);
-            recycleBinIcon.setVisibility(View.VISIBLE);
-        }
+        // ALWAYS keep the text title hidden and display only the modern Recycle Bin Icon next to the back arrow
+        titleTextView.setVisibility(View.GONE);
+        recycleBinIcon.setVisibility(View.VISIBLE);
     }
 
     // --- RECOVERY AND REMOVAL TASKS ---
