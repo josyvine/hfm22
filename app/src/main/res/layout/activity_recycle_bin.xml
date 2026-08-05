@@ -25,7 +25,7 @@
                 android:layout_centerVertical="true"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Back"
-                android:src="@android:drawable/ic_menu_revert" />
+                android:src="@drawable/arrow_back_24px" />
 
             <!-- New Enhancement: Recycle Bin Icon beside Back Arrow -->
             <ImageView
@@ -36,7 +36,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="4dp"
                 android:contentDescription="Recycle Bin Icon"
-                android:src="@android:drawable/ic_menu_delete"
+                android:src="@drawable/delete_24px"
                 android:tint="?attr/appHeaderTextColor"
                 android:visibility="gone" />
 
@@ -69,7 +69,7 @@
                     android:layout_height="48dp"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Toggle View Mode"
-                    android:src="@android:drawable/ic_menu_gallery"
+                    android:src="@drawable/grid_view_24px"
                     android:tint="?attr/appHeaderTextColor" />
 
                 <!-- Sort drop-down menu -->
@@ -79,7 +79,7 @@
                     android:layout_height="48dp"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Sort Items"
-                    android:src="@android:drawable/ic_menu_sort_by_size"
+                    android:src="@drawable/sort_24px"
                     android:tint="?attr/appHeaderTextColor" />
 
             </LinearLayout>
@@ -103,7 +103,7 @@
                 android:layout_height="56dp"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Close Selection"
-                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:src="@drawable/arrow_back_24px"
                 android:tint="?attr/appHeaderTextColor" />
 
             <TextView
@@ -144,7 +144,7 @@
             android:text="Restore"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:drawableStart="@android:drawable/ic_menu_revert"
+            android:drawableStart="@drawable/arrow_back_24px"
             android:drawableTint="?attr/appHeaderTextColor"
             android:paddingStart="16dp"
             android:paddingEnd="16dp" />
@@ -161,7 +161,7 @@
             android:text="Delete"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:drawableStart="@android:drawable/ic_menu_delete"
+            android:drawableStart="@drawable/delete_24px"
             android:drawableTint="?attr/appHeaderTextColor"
             android:paddingStart="16dp"
             android:paddingEnd="16dp" />
