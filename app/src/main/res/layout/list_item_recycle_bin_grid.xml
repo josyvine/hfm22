@@ -22,7 +22,7 @@
             android:layout_alignParentTop="true"
             android:scaleType="centerCrop"
             android:contentDescription="File Preview Icon"
-            android:src="@android:drawable/ic_menu_delete" />
+            android:src="@drawable/delete_24px" />
 
         <!-- Selection Overlay Layer (Semi-transparent color overlay when item is selected) -->
         <View
@@ -50,13 +50,13 @@
             android:id="@+id/file_name_picker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/file_icon_picker"
             android:layout_alignParentBottom="true"
+            android:layout_below="@id/file_icon_picker"
             android:gravity="center"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp"
-            android:paddingTop="2dp"
             android:paddingBottom="2dp"
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp"
+            android:paddingTop="2dp"
             android:singleLine="true"
             android:ellipsize="end"
             android:textColor="?attr/appHeaderTextColor"
