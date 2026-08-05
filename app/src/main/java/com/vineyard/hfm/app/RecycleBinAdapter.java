@@ -5,6 +5,7 @@ import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -12,10 +13,18 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 public class RecycleBinAdapter extends RecyclerView.Adapter<RecycleBinAdapter.ViewHolder> {
+
+    private static final int TYPE_LIST = 0;
+    private static final int TYPE_GRID = 1;
 
     private final Context context;
     private final List<File> fileList;
@@ -32,10 +41,24 @@ public class RecycleBinAdapter extends RecyclerView.Adapter<RecycleBinAdapter.Vi
         this.listener = listener;
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        if (context instanceof RecycleBinActivity) {
+            return ((RecycleBinActivity) context).isGridView() ? TYPE_GRID : TYPE_LIST;
+        }
+        return TYPE_LIST;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.list_item_file_picker, parent, false);
+        int layoutId;
+        if (viewType == TYPE_GRID) {
+            layoutId = R.layout.list_item_recycle_bin_grid;
+        } else {
+            layoutId = R.layout.list_item_recycle_bin_list;
+        }
+        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
         return new ViewHolder(view);
     }
 
@@ -53,38 +76,81 @@ public class RecycleBinAdapter extends RecyclerView.Adapter<RecycleBinAdapter.Vi
             contrastColor = ContextCompat.getColor(context, R.color.lt_colorPrimary);
         }
 
-        // Hide checkbox as it's not needed in the recycle bin view
-        holder.checkBox.setVisibility(View.GONE);
+        // --- HANDLE SELECTION CHECKS AND OVERLAYS ---
+        if (context instanceof RecycleBinActivity) {
+            RecycleBinActivity activity = (RecycleBinActivity) context;
+            boolean isSelMode = activity.isSelectionMode();
+            boolean isItemSelected = activity.isFileSelected(file);
+
+            if (isSelMode) {
+                if (holder.checkBox != null) {
+                    holder.checkBox.setVisibility(View.VISIBLE);
+                    if (holder.checkBox instanceof CheckBox) {
+                        ((CheckBox) holder.checkBox).setChecked(isItemSelected);
+                    }
+                }
+                if (holder.selectionOverlay != null) {
+                    holder.selectionOverlay.setVisibility(isItemSelected ? View.VISIBLE : View.GONE);
+                }
+            } else {
+                if (holder.checkBox != null) {
+                    holder.checkBox.setVisibility(View.GONE);
+                }
+                if (holder.selectionOverlay != null) {
+                    holder.selectionOverlay.setVisibility(View.GONE);
+                }
+            }
+        } else {
+            if (holder.checkBox != null) {
+                holder.checkBox.setVisibility(View.GONE);
+            }
+            if (holder.selectionOverlay != null) {
+                holder.selectionOverlay.setVisibility(View.GONE);
+            }
+        }
+
+        // --- RENDER THUMBNAILS AND VECTOR GRAPHICS ---
+        String name = file.getName();
+        int fallbackIcon = getIconForFileType(name);
 
         if (file.isDirectory()) {
-            // UPDATED: Modern yellow folder icon
             holder.fileIcon.setImageResource(R.drawable.ic_folder_modern);
-            // Apply theme-based tint
             holder.fileIcon.setColorFilter(contrastColor, PorterDuff.Mode.SRC_IN);
+        } else if (isMediaFile(name)) {
+            // Clear tint to display real image/video preview pixels properly
+            holder.fileIcon.clearColorFilter();
+            
+            Glide.with(context)
+                .load(file)
+                .apply(new RequestOptions()
+                    .placeholder(fallbackIcon)
+                    .error(fallbackIcon)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .centerCrop())
+                .into(holder.fileIcon);
         } else {
-            holder.fileIcon.setImageResource(getIconForFileType(file.getName()));
-            // Apply theme-based tint
+            holder.fileIcon.setImageResource(fallbackIcon);
             holder.fileIcon.setColorFilter(contrastColor, PorterDuff.Mode.SRC_IN);
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					if (listener != null) {
-						listener.onItemClick(file);
-					}
-				}
-			});
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onItemClick(file);
+                }
+            }
+        });
 
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					if (listener != null) {
-						listener.onItemLongClick(file);
-					}
-					return true; // Consume the long click event
-				}
-			});
+            @Override
+            public boolean onLongClick(View v) {
+                if (listener != null) {
+                    listener.onItemLongClick(file);
+                }
+                return true;
+            }
+        });
     }
 
     @Override
@@ -95,18 +161,29 @@ public class RecycleBinAdapter extends RecyclerView.Adapter<RecycleBinAdapter.Vi
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView fileIcon;
         TextView fileName;
-        View checkBox; // We get a reference to hide it, even though it's a CheckBox
+        View checkBox;
+        View selectionOverlay;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             fileIcon = itemView.findViewById(R.id.file_icon_picker);
             fileName = itemView.findViewById(R.id.file_name_picker);
             checkBox = itemView.findViewById(R.id.file_checkbox_picker);
+            selectionOverlay = itemView.findViewById(R.id.selection_overlay_picker);
         }
     }
 
+    private boolean isMediaFile(String fileName) {
+        if (fileName == null) return false;
+        String lower = fileName.toLowerCase(Locale.ROOT);
+        return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") ||
+               lower.endsWith(".gif") || lower.endsWith(".bmp") || lower.endsWith(".webp") ||
+               lower.endsWith(".mp4") || lower.endsWith(".3gp") || lower.endsWith(".mkv") ||
+               lower.endsWith(".webm") || lower.endsWith(".avi");
+    }
+
     private int getIconForFileType(String fileName) {
-        String lowerFileName = fileName.toLowerCase();
+        String lowerFileName = fileName.toLowerCase(Locale.ROOT);
         if (lowerFileName.endsWith(".doc") || lowerFileName.endsWith(".docx") || lowerFileName.endsWith(".pdf")) return R.drawable.docs_24px;
         if (lowerFileName.endsWith(".xls") || lowerFileName.endsWith(".xlsx")) return R.drawable.docs_24px;
         if (lowerFileName.endsWith(".ppt") || lowerFileName.endsWith(".pptx")) return R.drawable.docs_24px;
