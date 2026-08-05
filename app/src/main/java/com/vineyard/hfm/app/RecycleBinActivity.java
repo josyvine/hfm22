@@ -373,6 +373,10 @@ public class RecycleBinActivity extends Activity {
         return isSelectionMode;
     }
 
+    public boolean isGridView() {
+        return isGridView;
+    }
+
     private void updateSelectionUI() {
         if (isSelectionMode && !selectedFiles.isEmpty()) {
             bottomActionBar.setVisibility(View.VISIBLE);
