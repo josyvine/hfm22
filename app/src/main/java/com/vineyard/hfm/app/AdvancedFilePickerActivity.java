@@ -85,61 +85,61 @@ public class AdvancedFilePickerActivity extends Activity {
 
     private void setupRecyclerView() {
         adapter = new AdvancedFilePickerAdapter(this, new ArrayList<File>(), new AdvancedFilePickerAdapter.OnItemClickListener() {
-				@Override
-				public void onFileClicked(AdvancedFilePickerAdapter.FileItem item) {
-					updateSelectionCount();
-				}
+            @Override
+            public void onFileClicked(AdvancedFilePickerAdapter.FileItem item) {
+                updateSelectionCount();
+            }
 
-				@Override
-				public void onFolderClicked(File folder) {
-					navigateTo(folder);
-				}
+            @Override
+            public void onFolderClicked(File folder) {
+                navigateTo(folder);
+            }
 
-				@Override
-				public void onSelectionChanged() {
-					updateSelectionCount();
-				}
-			});
+            @Override
+            public void onSelectionChanged() {
+                updateSelectionCount();
+            }
+        });
         fileRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         fileRecyclerView.setAdapter(adapter);
     }
 
     private void setupListeners() {
         backButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					handleBackNavigation();
-				}
-			});
+            @Override
+            public void onClick(View v) {
+                handleBackNavigation();
+            }
+        });
 
         filterButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					showFilterMenu(v);
-				}
-			});
+            @Override
+            public void onClick(View v) {
+                showFilterMenu(v);
+            }
+        });
 
         searchInput.addTextChangedListener(new TextWatcher() {
-				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count) {
-					if (adapter != null) {
-						adapter.getFilter().filter(s);
-					}
-				}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (adapter != null) {
+                    adapter.getFilter().filter(s);
+                }
+            }
 
-				@Override
-				public void afterTextChanged(Editable s) {}
-			});
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
 
         sendButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					sendSelectedFiles();
-				}
-			});
+            @Override
+            public void onClick(View v) {
+                sendSelectedFiles();
+            }
+        });
 
         if (deleteButton != null) {
             deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -177,13 +177,21 @@ public class AdvancedFilePickerActivity extends Activity {
                         return;
                     }
 
-                    // Enhancement 2: Dual Bin Choice
+                    // Enhancement 2: Dual Bin Choice using Centralized RecycleManager
                     AlertDialog.Builder binBuilder = new AlertDialog.Builder(AdvancedFilePickerActivity.this);
                     binBuilder.setTitle("Choose Recycle Bin");
                     binBuilder.setItems(new CharSequence[]{"Phone Recycle Bin", "SD Card Recycle Bin"}, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int whichBin) {
-                            new MoveToRecycleTask(selected, whichBin == 1).execute();
+                            RecycleManager.recycleFiles(AdvancedFilePickerActivity.this, selected, whichBin == 1, new RecycleManager.RecycleCallback() {
+                                @Override
+                                public void onRecycleProgress(String currentFileName, int processed, int total) {}
+
+                                @Override
+                                public void onRecycleComplete(List<File> successfullyMovedFiles, int totalCount) {
+                                    navigateTo(currentDirectory);
+                                }
+                            });
                         }
                     });
                     binBuilder.show();
@@ -219,7 +227,7 @@ public class AdvancedFilePickerActivity extends Activity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 int deletedCount = intent.getIntExtra(DeleteService.EXTRA_DELETED_COUNT, 0);
-                Toast.makeText(AdvancedFilePickerActivity.this, "Deleted " + deletedCount + " files successfully.", Toast.LENGTH_LONG).show();
+                Toast.makeText(AdvancedFilePickerActivity.this, "Deleted " + deletedCount + " files successfully.", Toast.LENGTH_SHORT).show();
                 navigateTo(currentDirectory);
             }
         };
@@ -272,20 +280,20 @@ public class AdvancedFilePickerActivity extends Activity {
         PopupMenu popup = new PopupMenu(this, v);
         popup.getMenuInflater().inflate(R.menu.filter_menu, popup.getMenu());
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-				@Override
-				public boolean onMenuItemClick(MenuItem item) {
-					int itemId = item.getItemId();
-					if (itemId == R.id.filter_all) currentFilterType = "all";
-					else if (itemId == R.id.filter_images) currentFilterType = "images";
-					else if (itemId == R.id.filter_videos) currentFilterType = "videos";
-					else if (itemId == R.id.filter_documents) currentFilterType = "documents";
-					else if (itemId == R.id.filter_archives) currentFilterType = "archives";
-					else if (itemId == R.id.filter_other) currentFilterType = "other";
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int itemId = item.getItemId();
+                if (itemId == R.id.filter_all) currentFilterType = "all";
+                else if (itemId == R.id.filter_images) currentFilterType = "images";
+                else if (itemId == R.id.filter_videos) currentFilterType = "videos";
+                else if (itemId == R.id.filter_documents) currentFilterType = "documents";
+                else if (itemId == R.id.filter_archives) currentFilterType = "archives";
+                else if (itemId == R.id.filter_other) currentFilterType = "other";
 
-					navigateTo(currentDirectory);
-					return true;
-				}
-			});
+                navigateTo(currentDirectory);
+                return true;
+            }
+        });
         popup.show();
     }
 
@@ -303,17 +311,17 @@ public class AdvancedFilePickerActivity extends Activity {
             currentDirectory = directory;
 
             File[] files = directory.listFiles(new FileFilter() {
-					@Override
-					public boolean accept(File file) {
-						if (file.isHidden()) {
-							return false; 
-						}
-						if (file.isDirectory()) {
-							return true; 
-						}
-						return isFileTypeMatch(file.getName());
-					}
-				});
+                @Override
+                public boolean accept(File file) {
+                    if (file.isHidden()) {
+                        return false; 
+                    }
+                    if (file.isDirectory()) {
+                        return true; 
+                    }
+                    return isFileTypeMatch(file.getName());
+                }
+            });
 
             List<File> fileList = new ArrayList<>();
             if (files != null) {
@@ -321,17 +329,17 @@ public class AdvancedFilePickerActivity extends Activity {
             }
 
             Collections.sort(fileList, new Comparator<File>() {
-					@Override
-					public int compare(File f1, File f2) {
-						if (f1.isDirectory() && !f2.isDirectory()) {
-							return -1;
-						} else if (!f1.isDirectory() && f2.isDirectory()) {
-							return 1;
-						} else {
-							return f1.getName().compareToIgnoreCase(f2.getName());
-						}
-					}
-				});
+                @Override
+                public int compare(File f1, File f2) {
+                    if (f1.isDirectory() && !f2.isDirectory()) {
+                        return -1;
+                    } else if (!f1.isDirectory() && f2.isDirectory()) {
+                        return 1;
+                    } else {
+                        return f1.getName().compareToIgnoreCase(f2.getName());
+                    }
+                }
+            });
             return fileList;
         }
 
@@ -341,21 +349,21 @@ public class AdvancedFilePickerActivity extends Activity {
             pathTextView.setText(currentDirectory.getAbsolutePath());
 
             adapter = new AdvancedFilePickerAdapter(AdvancedFilePickerActivity.this, fileList, new AdvancedFilePickerAdapter.OnItemClickListener() {
-					@Override
-					public void onFileClicked(AdvancedFilePickerAdapter.FileItem item) {
-						updateSelectionCount();
-					}
+                @Override
+                public void onFileClicked(AdvancedFilePickerAdapter.FileItem item) {
+                    updateSelectionCount();
+                }
 
-					@Override
-					public void onFolderClicked(File folder) {
-						navigateTo(folder);
-					}
+                @Override
+                public void onFolderClicked(File folder) {
+                    navigateTo(folder);
+                }
 
-					@Override
-					public void onSelectionChanged() {
-						updateSelectionCount();
-					}
-				});
+                @Override
+                public void onSelectionChanged() {
+                    updateSelectionCount();
+                }
+            });
             fileRecyclerView.setAdapter(adapter);
             updateSelectionCount(); 
 
@@ -391,45 +399,6 @@ public class AdvancedFilePickerActivity extends Activity {
                 return !isImage && !isVideo && !isDoc && !isArchive;
             default:
                 return false;
-        }
-    }
-
-    private class MoveToRecycleTask extends AsyncTask<Void, Void, List<File>> {
-        private List<File> filesToMove;
-        private boolean useSdCardBin;
-
-        public MoveToRecycleTask(List<File> filesToMove, boolean useSdCardBin) {
-            this.filesToMove = filesToMove;
-            this.useSdCardBin = useSdCardBin;
-        }
-
-        @Override
-        protected List<File> doInBackground(Void... voids) {
-            List<File> moved = new ArrayList<>();
-            File phoneBin = new File(Environment.getExternalStorageDirectory(), "HFMRecycleBin");
-            if (!phoneBin.exists() && !useSdCardBin) phoneBin.mkdir();
-
-            for (File src : filesToMove) {
-                boolean success = false;
-                if (useSdCardBin && StorageUtils.isFileOnSdCard(AdvancedFilePickerActivity.this, src)) {
-                    if (StorageUtils.moveFileOnSdCardSafely(AdvancedFilePickerActivity.this, src)) success = true;
-                } else {
-                    File dst = new File(phoneBin, src.getName());
-                    if (src.renameTo(dst)) success = true;
-                    else if (StorageUtils.copyFile(AdvancedFilePickerActivity.this, src, dst)) {
-                        if (StorageUtils.deleteFile(AdvancedFilePickerActivity.this, src)) success = true;
-                        else dst.delete();
-                    }
-                }
-                if (success) moved.add(src);
-            }
-            return moved;
-        }
-
-        @Override
-        protected void onPostExecute(List<File> result) {
-            Toast.makeText(AdvancedFilePickerActivity.this, result.size() + " files moved to bin.", Toast.LENGTH_SHORT).show();
-            navigateTo(currentDirectory);
         }
     }
 
