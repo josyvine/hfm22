@@ -24,7 +24,7 @@
             android:layout_centerVertical="true"
             android:scaleType="centerCrop"
             android:contentDescription="File List Preview Icon"
-            android:src="@android:drawable/ic_menu_delete" />
+            android:src="@drawable/delete_24px" />
 
         <!-- Selection Checkbox (Right Aligned) -->
         <CheckBox
