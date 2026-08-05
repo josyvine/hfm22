@@ -77,6 +77,7 @@ public class RecycleManager {
             long totalStartTime = System.currentTimeMillis();
             List<File> movedFiles = new ArrayList<>();
             List<String> purgedSourcePaths = new ArrayList<>();
+            RecycleMetadataDatabase db = RecycleMetadataDatabase.getInstance(context);
 
             File phoneRecycleBinDir = new File(Environment.getExternalStorageDirectory(), "HFMRecycleBin");
             if (!useSdCardBin) {
@@ -130,6 +131,8 @@ public class RecycleManager {
                 if (useSdCardBin && fileIsOnSd) {
                     if (cachedSdRecycleBin != null && StorageUtils.moveFileOnSdCardSafely(context, sourceFile, cachedSdRecycleBin)) {
                         moveSuccess = true;
+                        // For SD Card SAF, it retains the source filename.
+                        db.saveRecord(sourceFile.getName(), sourcePath);
                         AppLogger.log(TAG, "SAF MOVE SUCCESS | " + sourcePath);
                     } else {
                         AppLogger.log(TAG, "SAF MOVE FAILED | " + sourcePath);
@@ -153,6 +156,7 @@ public class RecycleManager {
                     long renameDuration = System.currentTimeMillis() - renameStartTime;
 
                     if (moveSuccess) {
+                        db.saveRecord(destFile.getName(), sourcePath);
                         AppLogger.logMetric(TAG, "Atomic File.renameTo()", renameDuration, "Moved: " + sourcePath + " -> " + destFile.getAbsolutePath());
                     } else {
                         AppLogger.log(TAG, "RENAME FAILED | File.renameTo() returned false for: " + sourcePath);
@@ -170,6 +174,7 @@ public class RecycleManager {
                             if (StorageUtils.copyFile(context, sourceFile, destFile)) {
                                 if (StorageUtils.deleteFile(context, sourceFile)) {
                                     moveSuccess = true;
+                                    db.saveRecord(destFile.getName(), sourcePath);
                                     AppLogger.logMetric(TAG, "Fallback Copy-Delete", System.currentTimeMillis() - copyStartTime, "Moved: " + sourcePath);
                                 } else {
                                     destFile.delete();
