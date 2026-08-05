@@ -27,7 +27,7 @@
                 android:contentDescription="Back"
                 android:src="@drawable/arrow_back_24px" />
 
-            <!-- New Enhancement: Recycle Bin Icon beside Back Arrow -->
+            <!-- New Enhancement: Recycle Bin Icon beside Back Arrow (Forced to Visible) -->
             <ImageView
                 android:id="@+id/recycle_bin_icon"
                 android:layout_width="32dp"
@@ -38,9 +38,9 @@
                 android:contentDescription="Recycle Bin Icon"
                 android:src="@drawable/delete_24px"
                 android:tint="?attr/appHeaderTextColor"
-                android:visibility="gone" />
+                android:visibility="visible" />
 
-            <!-- Original Title View -->
+            <!-- Original Title View (Forced to Gone to prevent overlapping) -->
             <TextView
                 android:id="@+id/title_recycle_bin"
                 android:layout_width="wrap_content"
@@ -51,7 +51,8 @@
                 android:text="Recycle Bins"
                 android:textColor="?attr/appHeaderTextColor"
                 android:textSize="20sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <!-- Action Button Group on Far Right -->
             <LinearLayout
