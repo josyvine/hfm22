@@ -104,7 +104,6 @@ public class StorageBrowserActivity extends Activity implements StorageBrowserAd
     private Runnable mPendingOperation;
     private File mFilePendingPermissionForExtraction;
 
-
     public static class DateHeader {
         private final String dateString;
         private boolean isChecked;
@@ -122,7 +121,6 @@ public class StorageBrowserActivity extends Activity implements StorageBrowserAd
         public boolean isExpanded() { return isExpanded; }
         public void setExpanded(boolean expanded) { isExpanded = expanded; }
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
